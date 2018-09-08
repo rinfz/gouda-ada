@@ -1,5 +1,7 @@
 # A (Dotty) Gouda Bot
 
+Document Version: 2
+
 ## Introduction
 
 ### Purpose
@@ -64,6 +66,9 @@ Python. Crystal  is a more  viable candidate but I  was keen to  use a
 language with a  stronger type system than a  gradually typed language
 can offer.
 
+Due to the choice  of language, the bot will be  designed in an object
+orientated manner.
+
 ### Platform Support
 
 This bot is only intended to be run on Linux (and will be developed on
@@ -125,10 +130,170 @@ to and from strings and building up JSON objects one field at a time.
 Some functionality should be provided  for converting to and from hash
 maps, similar to how python works.
 
+### Config File
+
+The configuration  file for the  bot will also  be provided as  a json
+file  which  should   be  loaded  when  the  bot  starts   up.  If  no
+configuration  file is  found, the  bot will  prompt the  user with  a
+wizard for creating a basic config.
+
+The following fields are required:
+
+* Username - the username required to connect to the matrix server.
+* Password - the password required to connect to the matrix server.
+* Address - the address of the server to connect to.
+* Default Room - The room to join upon connecting to the server.
+
+### Matrix API
+
+The core  work of  the bot  will be the  implementation of  the Matrix
+API. Note that E2EE will not currently be supported.
+
+The  bot should  poll  the server  at 3  second  intervals. It  should
+request as little information as  possible from the server during this
+polling. Ada's time types should be used for the polling.
+
+The bot should identify users by their id, but address them with their
+display name.
+
+Request endpoints have the following form:
+
+/_matrix/client/<version>/<end>/<points>?some=parameters&more=parameters
+
+The bot will need to be able  to easily specify the version of the API
+and  whatever  endpoint  it  wishes  to  access.  The  parameters  are
+generally optional, however once logged  in, most requests require the
+access_token parameter. Due to the  persistence and wide-spread use of
+this parameter,  it will  be stored  as an attribute  on the  main bot
+client class.
+
+The  Gouda class  must also  be  able to  keep track  of user  account
+information provided  by the login  endpoint, such as the  user_id and
+device_id.
+
+The following end points will be implemented for version 1.
+
+* unstable/login - connect to the server
+* unstable/logout - logout (manual)
+* unstable/join - join a room
+* unstable/rooms/{..}/leave - leave a room (manual)
+* unstable/profile/{..}/avatar_url - update the avatar
+* unstable/profile/{..}/displayname - update the display name
+* All of the valid "Room Participation" API.
+* unstable/presence/{..}/status - update status (last online)
+* unstable/rooms/{..}/read_markers - update the read marker position
+
+Instant messaging should support all events and message types.
+
+A separate API  will be used for  the media end points  since they are
+sufficiently logically  different to the  client. The urls  start with
+the prefix:
+
+/_matrix/media/<version>/
+
+* /_matrix/media/unstable/upload - uploading content
+* /_matrix/media/unstable/download/{..}/{..}/{..} - download content
+
+These will not necessarily be supported for version 1. OpenCV may also
+be utilised  by a  module at some  point. Ada has  good enough  FFI to
+achieve this if no libraries are available.
+
+The config  file may take  a new field  "media_hours" which will  be a
+whitelist time range of when it is safe to upload media.
+
+### Messaging
+
+Before sending any message to the server, all potential responses from
+various modules  or core functionality  will be collated in  a staging
+area  where they  will be  prioritised  and/or adapted  based on  some
+conditions (not sure what yet).
+
+If  it decides  that multiple  messages  are of  equal importance,  it
+should send  them both, with a  slight delay between them  and perhaps
+some recognition  of the  fact multiple messages  have been  sent, for
+example:
+
+Message 1: I rate this thing a 10/10.
+Message 2: Also, blah blah blah.
+
+The also being the important part - the intention is to make it a more
+human like interaction.
+
 ### Modules
 
-TODO
+Modules  should possibly  have their  own  json config.  These can  be
+stored in a hierachical manner in  a config class, then exposed to the
+correct module at run time.
+
+Modules will all  provide a main subprogram which will  be run for all
+input messages to determine any meaningful output.
+
+Images  API -  any viable  API similar  to google  images (or  perhaps
+google itself) which  provides searching for images based  on a search
+term.
+
+YesNo / 8-ball - give answers to basic questions.
+
+Rating - rate things, this is more likely to be a bespoke command.
+
+Quotes  -  save  and   load/show  categorised  quotes,  either  unique
+categories or  for a given user.  This will require SQL.  The database
+connection will be exposed to all modules from the core bot.
+
+Acronym -  write a string to  the chat where users  can determine what
+the acronym might stand for. This will be a bespoke command.
+
+Keywords   -  respond   to  key   words  and   phrases  with   various
+responses. The  odds of replying  when a key  phrase is noted  in chat
+will be  random so to not  tire the users.  An example may be  where a
+user says "back", Gouda will reply "welcome back", although these will
+be configured by the user in the module's config file.
+
+Brain -  tbd. Something  like gauging  the atmosphere  in the  room by
+detecting certain words  or responses.  This will be  reflected with a
+"mood" stored as a vector between a  few common states of mood. It may
+be possible to manipulate the response from any module based upon this
+mood,  or delay  responses,  or ignore  certain  users (although  some
+indication must  be given  that a  user has  been ignored).  The brain
+should also  have some capability  of determining how many  people are
+online and  talking (look at rate  of flow of messages),  perhaps this
+could alter the polling rate or something.
 
 ## Prioritisation of Work
 
-TODO
+1. Implement JSON routines and loading of JSON config.
+2. Implement simple REST api routines such as GET, POST and PUT.
+3. Implement handler code for specific Matrix endpoints.
+4. Implement server polling once syncing is being worked on.
+5. Once the bot can send messages  to the server, a basic staging area
+   for messages should be written.
+6. Implement and delegate all message sending to modules.
+
+### Possible Classes
+
+Gouda -  main bot class,  keeps track  of connection information  in a
+similar way that a user would, i.e. know about the password, username,
+user_id, access_token. Also  runs the main connection  loop which runs
+all of the functionality against the server.
+
+Config -  Config handling for main  bot and modules. This  is owned by
+the main bot class.
+
+Connection - Used by the bot class to interact with the Matrix API.
+
+Staging Area - Used by the bot class to manage messages.
+
+Module Control  - Load/Reload/Unload modules  and run all  module code
+(via coroutines) and send them to the bot.
+
+Command line - Any CLI functionality required. Separate thread.
+
+Database - Database connection and routines, provided to modules.
+
+JSON - Utility function for JSON handling.
+
+More may be required.
+
+## License
+
+Gouda will be licensed under the GPLv3 license.
