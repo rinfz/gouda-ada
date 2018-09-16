@@ -158,7 +158,7 @@ display name.
 
 Request endpoints have the following form:
 
-/_matrix/client/<version>/<end>/<points>?some=parameters&more=parameters
+/_matrix/client/\<version\>/\<end\>/\<points\>?some=parameters&more=parameters
 
 The bot will need to be able  to easily specify the version of the API
 and  whatever  endpoint  it  wishes  to  access.  The  parameters  are
@@ -189,7 +189,7 @@ A separate API  will be used for  the media end points  since they are
 sufficiently logically  different to the  client. The urls  start with
 the prefix:
 
-/_matrix/media/<version>/
+/_matrix/media/\<version\>/
 
 * /_matrix/media/unstable/upload - uploading content
 * /_matrix/media/unstable/download/{..}/{..}/{..} - download content
