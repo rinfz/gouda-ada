@@ -128,7 +128,13 @@ supports creation of a  JSON object, serialisation and deserialisation
 to and from strings and building up JSON objects one field at a time.
 
 Some functionality should be provided  for converting to and from hash
-maps, similar to how python works.
+maps,  similar to  how python  works. This  will be  implemented as  a
+standalone API,  but will still  be part  of the main  codebase. There
+should be  a method for converting  a "dictionary" object to  a stdlib
+Ada  style hash  map, and  a  function for  converting a  "dictionary"
+object to  a string representing  json data.  It may be  necessary for
+there to be a method which converts a Map to a json-string but this is
+currently unclear.
 
 ### Config File
 
