@@ -11,11 +11,11 @@ package body Dict is
       return M;
    end To_Map;
 
-   function To_Json (Map : Json_Map.Map) return String is
+   function To_Json (Dict : Items) return String is
       Result : Json_Value := Create_Object;
    begin
-      for K in Map.Iterate loop
-	 Set_Field (Result, Json_Map.Key (K), Map (K));
+      for Item of Dict loop
+	 Set_Field (Result, To_String (Item.Key), Item.Value);
       end loop;
       return Result.Write;
    end To_Json;

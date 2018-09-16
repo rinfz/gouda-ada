@@ -20,6 +20,5 @@ package Dict is
      renames To_Unbounded_String;
 
    function To_Map (Dict : Items) return Json_Map.Map;
-   -- TODO: This should take an "Items" instead of a map
-   function To_Json (Map : Json_Map.Map) return String;
+   function To_Json (Dict : Items) return String;
 end Dict;
