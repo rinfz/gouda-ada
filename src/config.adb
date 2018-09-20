@@ -2,7 +2,7 @@ with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with GNATCOLL.JSON; use GNATCOLL.JSON;
 
-package body Gouda_Config is
+package body Config is
    function Read_Config return JSON_Value is
       Input : File_Type;
       Stream : Unbounded_String;
@@ -19,4 +19,4 @@ package body Gouda_Config is
       Close (Input);
       return Read (Stream);
    end Read_Config;
-end Gouda_Config;
+end Config;
