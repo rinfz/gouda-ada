@@ -57,9 +57,10 @@ package body Connection is
                 Parameters : Params.Map := Params.Empty_Map;
                 Version : String := "unstable")
   return JSON_Value is
-    Result : JSON_Value := Create_Object;
+    Url : String := Self.Build_Url (Endpoint, Parameters, Version);
+    Response : AWS.Response.Data := AWS.Client.Get (Url);
   begin
-    return Result;
+    return GNATCOLL.JSON.Read (String'(AWS.Response.Message_Body (Response)));
   end GET;
 
   function Login (Self : in out Matrix) return JSON_Value is
