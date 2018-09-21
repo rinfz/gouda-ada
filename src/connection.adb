@@ -1,8 +1,5 @@
 with AWS.Client;
 with AWS.Response;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with GNATCOLL.JSON; use GNATCOLL.JSON;
-with Dict;
 
 package body Connection is
    function Create (Config : JSON_Value) return Matrix is
@@ -20,13 +17,13 @@ package body Connection is
 		       Parameters : Params.Map;
 		       Version : String)
 		      return String is
-      Url : String := To_String (Self.Base_Url) & "/_matrix/client/" &
+      Url : String := - (Self.Base_Url) & "/_matrix/client/" &
 	Version & "/" & Endpoint;
       -- need to copy in case it's an empty map
       P : Params.Map := Parameters.Copy;
    begin
-      if Length (Self.Access_Token) > 0 then
-	 P.Include ("access_token", To_String (Self.Access_Token));
+      if UB.Length (Self.Access_Token) > 0 then
+	 P.Include ("access_token", - (Self.Access_Token));
       end if;
 
       if not P.Is_Empty then
@@ -64,13 +61,17 @@ package body Connection is
       return Result;
    end GET;
 
-   function Login (Self : Matrix) return JSON_Value is
+   function Login (Self : in out Matrix) return JSON_Value is
       Data : Dict.Items :=
-	((+"user", Create (To_String (Self.Username))),
-	 (+"password", Create (To_String (Self.Password))),
+	((+"user", Create (- (Self.Username))),
+	 (+"password", Create (- (Self.Password))),
 	 (+"type", Create ("m.login.password")));
       Result : JSON_Value := Self.POST("login", Data);
    begin
+      if UB.Length (Self.Access_Token) = 0 then
+	 Self.Access_Token := + (Result.Get ("access_token"));
+      end if;
+
       return Result;
    end Login;
 end Connection;

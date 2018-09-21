@@ -11,6 +11,7 @@ package body Gouda is
       Login : JSON_Value := Conn.Login;
    begin
       Ada.Text_IO.Put_Line (Login.Get ("user_id"));
+      Ada.Text_IO.Put_Line (Login.Get ("access_token"));
    end Run;
 
 end Gouda;

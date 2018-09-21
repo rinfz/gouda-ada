@@ -1,5 +1,5 @@
 with Ada.Containers.Indefinite_Hashed_Maps;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded;
 with Ada.Strings.Hash;
 with GNATCOLL.JSON; use GNATCOLL.JSON;
 with Dict;
@@ -8,18 +8,22 @@ package Connection is
    type Matrix is tagged private;
 
    function Create (Config : JSON_Value) return Matrix;
-   function Login (Self : Matrix) return JSON_Value;
+   function Login (Self : in out Matrix) return JSON_Value;
 private
+   package UB renames Ada.Strings.Unbounded;
+
    type Matrix is tagged record
-      Base_Url : Unbounded_String;
-      Username : Unbounded_String;
-      Password : Unbounded_String;
-      Room : Unbounded_String;
-      Access_Token : Unbounded_String;
+      Base_Url : UB.Unbounded_String;
+      Username : UB.Unbounded_String;
+      Password : UB.Unbounded_String;
+      Room : UB.Unbounded_String;
+      Access_Token : UB.Unbounded_String;
    end record;
 
-   function "+" (Source : String) return Unbounded_String
+   function "+" (Source : String) return UB.Unbounded_String
      renames Ada.Strings.Unbounded.To_Unbounded_String;
+   function "-" (Source : UB.Unbounded_String) return String
+     renames Ada.Strings.Unbounded.To_String;
 
    package Params is new Ada.Containers.Indefinite_Hashed_Maps
      (Key_Type => String,
