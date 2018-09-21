@@ -1,18 +1,16 @@
 with Ada.Text_IO;
 with GNATCOLL.JSON; use GNATCOLL.JSON;
-with Dict; use Dict;
 with Config;
+with Connection;
 
 package body Gouda is
 
    procedure Run is
-      Data : String := To_Json (
-         ((+"first", Create (Integer'(0))), (+"second", Create (Integer'(10))))
-      );
       Main_Config : JSON_Value := Config.Read_Config;
+      Conn : Connection.Matrix := Connection.Create (Main_Config);
+      Login : JSON_Value := Conn.Login;
    begin
-      Ada.Text_IO.Put_Line (Data);
-      Ada.Text_IO.Put_Line (Main_Config.Get ("username"));
+      Ada.Text_IO.Put_Line (Login.Get ("user_id"));
    end Run;
 
 end Gouda;
