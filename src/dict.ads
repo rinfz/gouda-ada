@@ -1,24 +1,23 @@
 with Ada.Containers.Indefinite_Hashed_Maps;
 with Ada.Strings.Hash;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with GNATCOLL.JSON; use GNATCOLL.JSON;
+with Ada.Strings.Unbounded;
+with GNATCOLL.JSON;
 
 package Dict is
-   type Item is record
-      Key : Unbounded_String;
-      Value : Json_Value;
-   end record;
-   type Items is array (Positive range <>) of Item;
+  package UB renames Ada.Strings.Unbounded;
+  package GJ renames GNATCOLL.JSON;
 
-   package Json_Map is new Ada.Containers.Indefinite_Hashed_Maps
-     (Key_Type => String,
-      Element_Type => Json_Value,
-      Hash => Ada.Strings.Hash,
-      Equivalent_Keys => "=");
+  type Item is record
+    Key : UB.Unbounded_String;
+    Value : GJ.JSON_Value;
+  end record;
+  type Items is array (Positive range <>) of Item;
 
-   function "+" (Source : String) return Unbounded_String
-     renames To_Unbounded_String;
+  function "+" (Source : String) return UB.Unbounded_String
+    renames UB.To_Unbounded_String;
 
-   function To_Map (Dict : Items) return Json_Map.Map;
-   function To_Json (Dict : Items) return String;
+  function "-" (Source : UB.Unbounded_String) return String
+    renames UB.To_String;
+
+  function To_Json (Dict : Items) return String;
 end Dict;

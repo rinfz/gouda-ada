@@ -1,6 +1,5 @@
-with GNATCOLL.JSON; use GNATCOLL.JSON;
-with Dict; use Dict;
+with GNATCOLL.JSON;
 
 package Config is
-   function Read_Config return JSON_Value;
+  function Read_Config return GNATCOLL.JSON.JSON_Value;
 end Config;

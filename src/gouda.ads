@@ -1,3 +1,3 @@
 package Gouda is
-   procedure Run;
+  procedure Run;
 end Gouda;
