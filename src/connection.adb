@@ -22,16 +22,18 @@ package body Connection is
 		      return String is
       Url : String := To_String (Self.Base_Url) & "/_matrix/client/" &
 	Version & "/" & Endpoint;
+      -- need to copy in case it's an empty map
+      P : Params.Map := Parameters.Copy;
    begin
-      --if Length (Self.Access_Token) > 0 then
-	 --Parameters.Include ("access_token", To_String (Self.Access_Token));
-      --end if;
+      if Length (Self.Access_Token) > 0 then
+	 P.Include ("access_token", To_String (Self.Access_Token));
+      end if;
 
-      if not Parameters.Is_Empty then
+      if not P.Is_Empty then
 	 Url := Url & "?";
 	 -- final trailing & on the url might be ok to leave in
 	 for K in Parameters.Iterate loop
-	    Url := Url & Params.Key (K) & "=" & Parameters (K) & "&";
+	    Url := Url & Params.Key (K) & "=" & P (K) & "&";
 	 end loop;
       end if;
 
