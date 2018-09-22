@@ -7,12 +7,22 @@ with Dict;
 package Connection is
   type Matrix is tagged private;
 
+  package UB renames Ada.Strings.Unbounded;
+
   function Create (Config : JSON_Value) return Matrix;
-  function Login (Self : in out Matrix) return JSON_Value;
-  function Join (Self : in out Matrix) return JSON_Value;
+  function Get_Access_Token (Self : Matrix) return UB.Unbounded_String;
+  function Get_Room_ID (Self : Matrix) return UB.Unbounded_String;
+
+  function Login (Self : in out Matrix) return JSON_Value
+    with
+      Pre  => UB.Length (Self.Get_Access_Token) = 0,
+      Post => UB.Length (Self.Get_Access_Token) > 0;
+  function Join (Self : in out Matrix) return JSON_Value
+    with
+      Pre  => UB.Length (Self.Get_Room_ID) = 0,
+      Post => UB.Length (Self.Get_Room_ID) > 0;
 
 private
-  package UB renames Ada.Strings.Unbounded;
 
   type Matrix is tagged record
     Base_Url : UB.Unbounded_String;

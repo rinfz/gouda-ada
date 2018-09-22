@@ -20,6 +20,16 @@ package body Connection is
     );
   end Create;
 
+  function Get_Access_Token (Self : Matrix) return UB.Unbounded_String is
+  begin
+    return Self.Access_Token;
+  end Get_Access_Token;
+
+  function Get_Room_ID (Self : Matrix) return UB.Unbounded_String is
+  begin
+    return Self.Room_ID;
+  end Get_Room_ID;
+
   function Build_Url (Self : Matrix;
                       Endpoint : String;
                       Parameters : Params.Map;
