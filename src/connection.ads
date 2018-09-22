@@ -9,6 +9,7 @@ package Connection is
 
   function Create (Config : JSON_Value) return Matrix;
   function Login (Self : in out Matrix) return JSON_Value;
+  function Join (Self : in out Matrix) return JSON_Value;
 
 private
   package UB renames Ada.Strings.Unbounded;
@@ -18,6 +19,7 @@ private
     Username : UB.Unbounded_String;
     Password : UB.Unbounded_String;
     Room : UB.Unbounded_String;
+    Room_ID : UB.Unbounded_String;
     Access_Token : UB.Unbounded_String;
   end record;
 

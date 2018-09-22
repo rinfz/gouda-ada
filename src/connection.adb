@@ -3,12 +3,19 @@ with AWS.Response;
 
 package body Connection is
   function Create (Config : JSON_Value) return Matrix is
+    Room : UB.Unbounded_String := Config.Get ("room");
+    Hash_Idx : Positive := UB.Index (Room, "#", 1);
+    Colon_Idx : Positive := UB.Index (Room, ":", 1);
   begin
+    UB.Replace_Slice (Room, Hash_Idx, Hash_Idx, "%23");
+    -- Adjust indexes to account for mutation with Hash_Idx
+    UB.Replace_Slice (Room, Colon_Idx + 2, Colon_Idx + 2, "%3A");
     return Matrix'(
       Base_Url     => + (Config.Get ("address")),
       Username     => + (Config.Get ("username")),
       Password     => + (Config.Get ("password")),
-      Room         => + (Config.Get ("room")),
+      Room         =>    Room,
+      Room_ID      => + (""),
       Access_Token => + ("")
     );
   end Create;
@@ -18,24 +25,25 @@ package body Connection is
                       Parameters : Params.Map;
                       Version : String)
   return String is
-    Url : String := - (Self.Base_Url) & "/_matrix/client/" &
-                        Version & "/" & Endpoint;
+    Url : UB.Unbounded_String := Self.Base_Url;
     -- need to copy in case it's an empty map
     P : Params.Map := Parameters.Copy;
   begin
+    UB.Append (Url, "/_matrix/client/" & Version & "/" & Endpoint);
     if UB.Length (Self.Access_Token) > 0 then
       P.Include ("access_token", - (Self.Access_Token));
     end if;
 
     if not P.Is_Empty then
-      Url := Url & "?";
+      UB.Append (Url, "?");
       -- final trailing & on the url might be ok to leave in
-      for K in Parameters.Iterate loop
-        Url := Url & Params.Key (K) & "=" & P (K) & "&";
+      for K in P.Iterate loop
+        UB.Append(Url, Params.Key (K) & "=" & P (K) & "&");
       end loop;
+      Url := + (UB.Slice (Url, 1, UB.Length (Url) - 1));
     end if;
 
-    return Url;
+    return -Url;
   end Build_Url;
 
   function POST (Self : Matrix;
@@ -75,4 +83,11 @@ package body Connection is
     end if;
     return Result;
   end Login;
+
+  function Join (Self : in out Matrix) return JSON_Value is
+    Result : JSON_Value := Self.POST("join/" & (-Self.Room), Dict.Null_Data);
+  begin
+    Self.Room_ID := + (Result.Get ("room_id"));
+    return Result;
+  end Join;
 end Connection;

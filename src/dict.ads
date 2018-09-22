@@ -19,5 +19,7 @@ package Dict is
   function "-" (Source : UB.Unbounded_String) return String
     renames UB.To_String;
 
+  Null_Data : constant Items (1 .. 0) := (others => (+"", GJ.Create_Object));
+
   function To_Json (Dict : Items) return String;
 end Dict;
