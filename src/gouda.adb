@@ -11,7 +11,14 @@ package body Gouda is
     Login : JSON_Value := Conn.Login;
     Join : JSON_Value := Conn.Join;
   begin
-    Ada.Text_IO.Put_Line (Login.Get ("user_id"));
+    loop
+      declare
+        Data : JSON_Value := Conn.Sync;
+      begin
+        Ada.Text_IO.Put_Line (Data.Write);
+        delay 3.0;
+      end;
+    end loop;
   end Run;
 
 end Gouda;

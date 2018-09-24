@@ -16,7 +16,8 @@ package body Connection is
       Password     => + (Config.Get ("password")),
       Room         =>    Room,
       Room_ID      => + (""),
-      Access_Token => + ("")
+      Access_Token => + (""),
+      Next_Batch   => + ("")
     );
   end Create;
 
@@ -100,4 +101,20 @@ package body Connection is
     Self.Room_ID := + (Result.Get ("room_id"));
     return Result;
   end Join;
+
+  function Sync (Self : in out Matrix) return JSON_Value is
+    Parameters : Params.Map;
+  begin
+    Parameters.Include ("filter", "{""room"":{""timeline"":{""limit"":1}}}");
+    if UB.Length (Self.Next_Batch) > 0 then
+      Parameters.Include ("since", -Self.Next_Batch);
+    end if;
+
+    declare
+      Result : JSON_Value := Self.GET("sync", Parameters);
+    begin
+      Self.Next_Batch := +Result.Get ("next_batch");
+      return Result;
+    end;
+  end Sync;
 end Connection;

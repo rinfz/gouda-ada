@@ -21,6 +21,7 @@ package Connection is
     with
       Pre  => UB.Length (Self.Get_Room_ID) = 0,
       Post => UB.Length (Self.Get_Room_ID) > 0;
+  function Sync (Self : in out Matrix) return JSON_Value;
 
 private
 
@@ -31,6 +32,7 @@ private
     Room : UB.Unbounded_String;
     Room_ID : UB.Unbounded_String;
     Access_Token : UB.Unbounded_String;
+    Next_Batch : UB.Unbounded_String;
   end record;
 
   function "+" (Source : String) return UB.Unbounded_String
