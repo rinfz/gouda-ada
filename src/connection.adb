@@ -15,6 +15,7 @@ package body Connection is
       Username     => + (Config.Get ("username")),
       Password     => + (Config.Get ("password")),
       Room         =>    Room,
+      User_ID      => + (""),
       Room_ID      => + (""),
       Access_Token => + (""),
       Next_Batch   => + ("")
@@ -25,6 +26,11 @@ package body Connection is
   begin
     return Self.Access_Token;
   end Get_Access_Token;
+
+  function Get_User_ID (Self : Matrix) return UB.Unbounded_String is
+  begin
+    return Self.User_ID;
+  end Get_User_ID;
 
   function Get_Room_ID (Self : Matrix) return UB.Unbounded_String is
   begin
@@ -89,9 +95,8 @@ package body Connection is
       (+"type", Create ("m.login.password")));
     Result : JSON_Value := Self.POST("login", Data);
   begin
-    if UB.Length (Self.Access_Token) = 0 then
-      Self.Access_Token := + (Result.Get ("access_token"));
-    end if;
+    Self.Access_Token := +Result.Get ("access_token");
+    Self.User_ID := +Result.Get ("user_id");
     return Result;
   end Login;
 
@@ -101,6 +106,11 @@ package body Connection is
     Self.Room_ID := + (Result.Get ("room_id"));
     return Result;
   end Join;
+
+  procedure Upload_Filter (Self : in out Matrix) is
+  begin
+    null;
+  end Upload_Filter;
 
   function Sync (Self : in out Matrix) return JSON_Value is
     Parameters : Params.Map;
