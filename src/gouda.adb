@@ -16,9 +16,10 @@ package body Gouda is
   procedure Run is
     Main_Config : GJ.JSON_Value := Config.Read_Config;
     Conn : Connection.Matrix := Connection.Create (Main_Config);
-    Login : GJ.JSON_Value := Conn.Login;
-    Join : GJ.JSON_Value := Conn.Join;
   begin
+    Conn.Login;
+    Conn.Join;
+    Conn.Upload_Filter;
     loop
       declare
         Data : GJ.JSON_Value := Conn.Sync;

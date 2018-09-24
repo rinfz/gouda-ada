@@ -18,7 +18,8 @@ package body Connection is
       User_ID      => + (""),
       Room_ID      => + (""),
       Access_Token => + (""),
-      Next_Batch   => + ("")
+      Next_Batch   => + (""),
+      Filter       => + ("")
     );
   end Create;
 
@@ -36,6 +37,11 @@ package body Connection is
   begin
     return Self.Room_ID;
   end Get_Room_ID;
+
+  function Get_Filter (Self : Matrix) return UB.Unbounded_String is
+  begin
+    return Self.Filter;
+  end Get_Filter;
 
   function Build_Url (Self : Matrix;
                       Endpoint : String;
@@ -88,34 +94,38 @@ package body Connection is
     return GNATCOLL.JSON.Read (String'(AWS.Response.Message_Body (Response)));
   end GET;
 
-  function Login (Self : in out Matrix) return JSON_Value is
+  procedure Login (Self : in out Matrix) is
     Data : Dict.Items := (
-      (+"user", Create (- (Self.Username))),
-      (+"password", Create (- (Self.Password))),
+      (+"user", Create (-Self.Username)),
+      (+"password", Create (-Self.Password)),
       (+"type", Create ("m.login.password")));
     Result : JSON_Value := Self.POST("login", Data);
   begin
     Self.Access_Token := +Result.Get ("access_token");
     Self.User_ID := +Result.Get ("user_id");
-    return Result;
   end Login;
 
-  function Join (Self : in out Matrix) return JSON_Value is
+  procedure Join (Self : in out Matrix) is
     Result : JSON_Value := Self.POST("join/" & (-Self.Room), Dict.Null_Data);
   begin
     Self.Room_ID := + (Result.Get ("room_id"));
-    return Result;
   end Join;
 
   procedure Upload_Filter (Self : in out Matrix) is
+    Type_Filter : Dict.Item :=
+      (+"account_data", Read ("{""types"":[""m.room.message""]}"));
+    Room_Filter : Dict.Item :=
+      (+"room", Read ("{""rooms"":[""" & (-Self.Room_ID) & """]}"));
+    Data : Dict.Items := Dict.Items'(Type_Filter, Room_Filter);
+    Result : JSON_Value := Self.POST("user/" & (-Self.User_ID) & "/filter", Data);
   begin
-    null;
+    Self.Filter := +Result.Get ("filter_id");
   end Upload_Filter;
 
   function Sync (Self : in out Matrix) return JSON_Value is
     Parameters : Params.Map;
   begin
-    Parameters.Include ("filter", "{""room"":{""timeline"":{""limit"":1}}}");
+    Parameters.Include ("filter", -Self.Filter);
     if UB.Length (Self.Next_Batch) > 0 then
       Parameters.Include ("since", -Self.Next_Batch);
     end if;

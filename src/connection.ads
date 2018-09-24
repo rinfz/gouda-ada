@@ -13,19 +13,22 @@ package Connection is
   function Get_Access_Token (Self : Matrix) return UB.Unbounded_String;
   function Get_User_ID (Self : Matrix) return UB.Unbounded_String;
   function Get_Room_ID (Self : Matrix) return UB.Unbounded_String;
+  function Get_Filter (Self : Matrix) return UB.Unbounded_String;
 
-  function Login (Self : in out Matrix) return JSON_Value
+  procedure Login (Self : in out Matrix)
     with
       Pre  => UB.Length (Self.Get_Access_Token) = 0 and
         UB.Length (Self.Get_User_ID) = 0,
       Post => UB.Length (Self.Get_Access_Token) > 0 and
         UB.Length (Self.Get_User_ID) > 0;
-  function Join (Self : in out Matrix) return JSON_Value
+  procedure Join (Self : in out Matrix)
     with
       Pre  => UB.Length (Self.Get_Room_ID) = 0,
       Post => UB.Length (Self.Get_Room_ID) > 0;
   procedure Upload_Filter (Self : in out Matrix);
-  function Sync (Self : in out Matrix) return JSON_Value;
+  function Sync (Self : in out Matrix) return JSON_Value
+    with
+      Pre => UB.Length (Self.Get_Filter) > 0;
 
 private
 
@@ -38,6 +41,7 @@ private
     Room_ID : UB.Unbounded_String;
     Access_Token : UB.Unbounded_String;
     Next_Batch : UB.Unbounded_String;
+    Filter : UB.Unbounded_String;
   end record;
 
   function "+" (Source : String) return UB.Unbounded_String
