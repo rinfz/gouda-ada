@@ -4,6 +4,10 @@ with Connection;
 
 package body Gouda is
 
+  function Create_Message (Msg_Body : UB.Unbounded_String;
+                           Sender : UB.Unbounded_String) return Message
+  is (Message'(Msg_Body, Sender));
+
   function Extract_Messages (Data : GJ.JSON_Value) return Messages is
   begin
     return No_Messages;
