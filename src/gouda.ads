@@ -1,22 +1,23 @@
 with Ada.Strings.Unbounded;
 with GNATCOLL.JSON;
+with Connection;
 
 package Gouda is
   package GJ renames GNATCOLL.JSON;
   package UB renames Ada.Strings.Unbounded;
 
-  type Message is private;
-  type Messages (<>) is private;
-
-  function Create_Message (Msg_Body : UB.Unbounded_String;
-                           Sender : UB.Unbounded_String) return Message;
-  function Extract_Messages (Data : GJ.JSON_Value) return Messages;
-  procedure Run;
-private
   type Message is record
     Msg_Body : UB.Unbounded_String;
     Sender : UB.Unbounded_String;
   end record;
+  type Messages (<>) is private;
+
+  function Create_Message (Msg_Body : UB.Unbounded_String;
+                           Sender : UB.Unbounded_String) return Message;
+  function Extract_Messages (Conn : Connection.Matrix;
+                             Data : GJ.JSON_Value) return Messages;
+  procedure Run;
+private
   type Messages is array (Positive range <>) of Message;
 
   No_Messages : constant Messages (1 .. 0) := (
