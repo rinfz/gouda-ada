@@ -29,6 +29,7 @@ package Connection is
   function Sync (Self : in out Matrix) return JSON_Value
     with
       Pre => UB.Length (Self.Get_Filter) > 0;
+  procedure Send_Message (Self : in out Matrix; Message : String);
 
 private
 
@@ -42,6 +43,7 @@ private
     Access_Token : UB.Unbounded_String;
     Next_Batch : UB.Unbounded_String;
     Filter : UB.Unbounded_String;
+    TX_ID : Natural;
   end record;
 
   function "+" (Source : String) return UB.Unbounded_String
@@ -70,6 +72,13 @@ private
 
   function GET (Self : Matrix;
                 Endpoint : String;
+                Parameters : Params.Map := Params.Empty_Map;
+                Version : String := "unstable")
+  return JSON_Value;
+
+  function PUT (Self : Matrix;
+                Endpoint : String;
+                Data : Dict.Items;
                 Parameters : Params.Map := Params.Empty_Map;
                 Version : String := "unstable")
   return JSON_Value;

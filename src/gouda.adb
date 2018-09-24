@@ -41,11 +41,14 @@ package body Gouda is
     Conn.Upload_Filter;
     loop
       declare
+        -- TODO: only sync from start up
         Data : GJ.JSON_Value := Conn.Sync;
         Text_Messages : Messages := Extract_Messages (Conn, Data);
       begin
         for M of Text_Messages loop
-          Ada.Text_IO.Put_Line (UB.To_String (M.Msg_Body));
+          if UB.Count (M.Msg_Body, "hello bot") > 0 then
+            Conn.Send_Message ("YO WHAT UP");
+          end if;
         end loop;
       end;
       delay 3.0;

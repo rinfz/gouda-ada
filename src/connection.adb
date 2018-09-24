@@ -1,5 +1,7 @@
 with AWS.Client;
 with AWS.Response;
+with Ada.Strings;
+with Ada.Strings.Fixed;
 
 package body Connection is
   function Create (Config : JSON_Value) return Matrix is
@@ -19,7 +21,8 @@ package body Connection is
       Room_ID      => + (""),
       Access_Token => + (""),
       Next_Batch   => + (""),
-      Filter       => + ("")
+      Filter       => + (""),
+      TX_ID        => 0
     );
   end Create;
 
@@ -94,6 +97,18 @@ package body Connection is
     return GNATCOLL.JSON.Read (String'(AWS.Response.Message_Body (Response)));
   end GET;
 
+  function PUT (Self : Matrix;
+                Endpoint : String;
+                Data : Dict.Items;
+                Parameters : Params.Map := Params.Empty_Map;
+                Version : String := "unstable")
+  return JSON_Value is
+    Url : String := Self.Build_Url (Endpoint, Parameters, Version);
+    Response : AWS.Response.Data := AWS.Client.Put (Url, Dict.To_Json (Data));
+  begin
+    return GNATCOLL.JSON.Read (String'(AWS.Response.Message_Body (Response)));
+  end PUT;
+
   procedure Login (Self : in out Matrix) is
     Data : Dict.Items := (
       (+"user", Create (-Self.Username)),
@@ -137,4 +152,19 @@ package body Connection is
       return Result;
     end;
   end Sync;
+
+  procedure Send_Message (Self : in out Matrix; Message : String) is
+    Data : Dict.Items := (
+      (+"body", Create (Message)),
+      (+"msgtype", Create ("m.text")));
+    Result : JSON_Value :=
+      Self.PUT("rooms/"
+               & (-Self.Room_ID)
+               & "/send/m.room.message/"
+               & Ada.Strings.Fixed.Trim(Natural'Image(Self.TX_ID),
+                                        Ada.Strings.Left),
+               Data);
+  begin
+    Self.TX_ID := Self.TX_ID + 1;
+  end Send_Message;
 end Connection;

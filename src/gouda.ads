@@ -7,6 +7,7 @@ package Gouda is
   package UB renames Ada.Strings.Unbounded;
 
   type Message is record
+    -- TODO: use UTF8 String
     Msg_Body : UB.Unbounded_String;
     Sender : UB.Unbounded_String;
   end record;
