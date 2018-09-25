@@ -4,6 +4,9 @@ with Ada.Strings.Hash;
 with GNATCOLL.JSON; use GNATCOLL.JSON;
 with Dict;
 
+pragma Elaborate_All (Dict);
+pragma Elaborate_All (GNATCOLL.JSON);
+
 package Connection is
   type Matrix is tagged private;
 

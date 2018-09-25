@@ -11,7 +11,7 @@ package body Config is
     Open (File => Input, Mode => In_File, Name => "config.json");
     loop
       declare
-        Line : String := Get_Line (Input);
+        Line : constant String := Get_Line (Input);
       begin
         UB.Append (Stream, Line);
       end;

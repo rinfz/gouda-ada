@@ -3,11 +3,14 @@ with AWS.Response;
 with Ada.Strings;
 with Ada.Strings.Fixed;
 
+pragma Elaborate_All (AWS.Client);
+pragma Elaborate_All (AWS.Response);
+
 package body Connection is
   function Create (Config : JSON_Value) return Matrix is
     Room : UB.Unbounded_String := Config.Get ("room");
-    Hash_Idx : Positive := UB.Index (Room, "#", 1);
-    Colon_Idx : Positive := UB.Index (Room, ":", 1);
+    Hash_Idx : constant Positive := UB.Index (Room, "#", 1);
+    Colon_Idx : constant Positive := UB.Index (Room, ":", 1);
   begin
     UB.Replace_Slice (Room, Hash_Idx, Hash_Idx, "%23");
     -- Adjust indexes to account for mutation with Hash_Idx
@@ -78,8 +81,8 @@ package body Connection is
                  Parameters : Params.Map := Params.Empty_Map;
                  Version : String := "unstable")
   return JSON_Value is
-    Url : String := Self.Build_Url (Endpoint, Parameters, Version);
-    Response : AWS.Response.Data := AWS.Client.Post (
+    Url : constant String := Self.Build_Url (Endpoint, Parameters, Version);
+    Response : constant AWS.Response.Data := AWS.Client.Post (
       Url, Dict.To_Json (Data), "application/json"
     );
   begin
@@ -91,8 +94,8 @@ package body Connection is
                 Parameters : Params.Map := Params.Empty_Map;
                 Version : String := "unstable")
   return JSON_Value is
-    Url : String := Self.Build_Url (Endpoint, Parameters, Version);
-    Response : AWS.Response.Data := AWS.Client.Get (Url);
+    Url : constant String := Self.Build_Url (Endpoint, Parameters, Version);
+    Response : constant AWS.Response.Data := AWS.Client.Get (Url);
   begin
     return GNATCOLL.JSON.Read (String'(AWS.Response.Message_Body (Response)));
   end GET;
@@ -103,36 +106,36 @@ package body Connection is
                 Parameters : Params.Map := Params.Empty_Map;
                 Version : String := "unstable")
   return JSON_Value is
-    Url : String := Self.Build_Url (Endpoint, Parameters, Version);
-    Response : AWS.Response.Data := AWS.Client.Put (Url, Dict.To_Json (Data));
+    Url : constant String := Self.Build_Url (Endpoint, Parameters, Version);
+    Response : constant AWS.Response.Data := AWS.Client.Put (Url, Dict.To_Json (Data));
   begin
     return GNATCOLL.JSON.Read (String'(AWS.Response.Message_Body (Response)));
   end PUT;
 
   procedure Login (Self : in out Matrix) is
-    Data : Dict.Items := (
+    Data : constant Dict.Items := (
       (+"user", Create (-Self.Username)),
       (+"password", Create (-Self.Password)),
       (+"type", Create ("m.login.password")));
-    Result : JSON_Value := Self.POST("login", Data);
+    Result : constant JSON_Value := Self.POST("login", Data);
   begin
     Self.Access_Token := +Result.Get ("access_token");
     Self.User_ID := +Result.Get ("user_id");
   end Login;
 
   procedure Join (Self : in out Matrix) is
-    Result : JSON_Value := Self.POST("join/" & (-Self.Room), Dict.Null_Data);
+    Result : constant JSON_Value := Self.POST("join/" & (-Self.Room), Dict.Null_Data);
   begin
     Self.Room_ID := + (Result.Get ("room_id"));
   end Join;
 
   procedure Upload_Filter (Self : in out Matrix) is
-    Type_Filter : Dict.Item :=
+    Type_Filter : constant Dict.Item :=
       (+"account_data", Read ("{""types"":[""m.room.message""]}"));
-    Room_Filter : Dict.Item :=
+    Room_Filter : constant Dict.Item :=
       (+"room", Read ("{""rooms"":[""" & (-Self.Room_ID) & """]}"));
-    Data : Dict.Items := Dict.Items'(Type_Filter, Room_Filter);
-    Result : JSON_Value := Self.POST("user/" & (-Self.User_ID) & "/filter", Data);
+    Data : constant Dict.Items := Dict.Items'(Type_Filter, Room_Filter);
+    Result : constant JSON_Value := Self.POST("user/" & (-Self.User_ID) & "/filter", Data);
   begin
     Self.Filter := +Result.Get ("filter_id");
   end Upload_Filter;
@@ -146,7 +149,7 @@ package body Connection is
     end if;
 
     declare
-      Result : JSON_Value := Self.GET("sync", Parameters);
+      Result : constant JSON_Value := Self.GET("sync", Parameters);
     begin
       Self.Next_Batch := +Result.Get ("next_batch");
       return Result;
@@ -154,7 +157,7 @@ package body Connection is
   end Sync;
 
   procedure Send_Message (Self : in out Matrix; Message : String) is
-    Data : Dict.Items := (
+    Data : constant Dict.Items := (
       (+"body", Create (Message)),
       (+"msgtype", Create ("m.text")));
     Result : JSON_Value :=
@@ -164,6 +167,7 @@ package body Connection is
                & Ada.Strings.Fixed.Trim(Natural'Image(Self.TX_ID),
                                         Ada.Strings.Left),
                Data);
+    pragma Unreferenced (Result);
   begin
     Self.TX_ID := Self.TX_ID + 1;
   end Send_Message;

@@ -2,6 +2,8 @@ with Ada.Strings.Unbounded;
 with GNATCOLL.JSON;
 with Connection;
 
+pragma Elaborate_All (GNATCOLL.JSON);
+
 package Gouda is
   package GJ renames GNATCOLL.JSON;
   package UB renames Ada.Strings.Unbounded;

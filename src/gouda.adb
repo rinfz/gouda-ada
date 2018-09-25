@@ -1,5 +1,6 @@
-with Ada.Text_IO;
 with Config;
+
+pragma Elaborate_All (Config);
 
 package body Gouda is
 
@@ -9,14 +10,15 @@ package body Gouda is
 
   function Extract_Messages (Conn : Connection.Matrix;
                              Data : GJ.JSON_Value) return Messages is
-    Room : String := UB.To_String (Conn.Get_Room_ID);
-    Key : GJ.JSON_Value := Data.Get ("rooms")
-                               .Get ("join");
+    Room : constant String := UB.To_String (Conn.Get_Room_ID);
+    Key : constant GJ.JSON_Value := Data.Get ("rooms").Get ("join");
   begin
     if Key.Has_Field (Room) then
       declare
-        Events : GJ.JSON_Array := Key.Get (Room).Get ("timeline").Get ("events");
-        Result_Length : Natural := GJ.Length (Events);
+        Events : constant GJ.JSON_Array := Key.Get (Room)
+                                              .Get ("timeline")
+                                              .Get ("events");
+        Result_Length : constant Natural := GJ.Length (Events);
         Result : Messages (1 .. Result_Length);
       begin
         for I in 1 .. Result_Length loop
@@ -33,17 +35,22 @@ package body Gouda is
   end Extract_Messages;
 
   procedure Run is
-    Main_Config : GJ.JSON_Value := Config.Read_Config;
+    Main_Config : constant GJ.JSON_Value := Config.Read_Config;
     Conn : Connection.Matrix := Connection.Create (Main_Config);
   begin
     Conn.Login;
     Conn.Join;
     Conn.Upload_Filter;
+    declare
+      Initial_Sync : constant GJ.JSON_Value := Conn.Sync;
+    begin
+      pragma Unreferenced (Initial_Sync);
+    end;
     loop
       declare
         -- TODO: only sync from start up
-        Data : GJ.JSON_Value := Conn.Sync;
-        Text_Messages : Messages := Extract_Messages (Conn, Data);
+        Data : constant GJ.JSON_Value := Conn.Sync;
+        Text_Messages : constant Messages := Extract_Messages (Conn, Data);
       begin
         for M of Text_Messages loop
           if UB.Count (M.Msg_Body, "hello bot") > 0 then
