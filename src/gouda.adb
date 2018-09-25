@@ -48,7 +48,6 @@ package body Gouda is
     end;
     loop
       declare
-        -- TODO: only sync from start up
         Data : constant GJ.JSON_Value := Conn.Sync;
         Text_Messages : constant Messages := Extract_Messages (Conn, Data);
       begin
