@@ -1,6 +1,6 @@
 # A (Dotty) Gouda Bot
 
-Document Version: 2
+Document Version: 3
 
 ## Introduction
 
@@ -155,6 +155,8 @@ The following fields are required:
 The core  work of  the bot  will be the  implementation of  the Matrix
 API. Note that E2EE will not currently be supported.
 
+The bot must receive data encoded as UTF-8.
+
 The  bot should  poll  the server  at 3  second  intervals. It  should
 request as little information as  possible from the server during this
 polling. Ada's time types should be used for the polling.
@@ -164,18 +166,19 @@ display name.
 
 Request endpoints have the following form:
 
-/_matrix/client/\<version\>/\<end\>/\<points\>?some=parameters&more=parameters
+/\_matrix/client/\<version\>/\<end\>/\<points\>?some=parameters&more=parameters
 
 The bot will need to be able  to easily specify the version of the API
 and  whatever  endpoint  it  wishes  to  access.  The  parameters  are
 generally optional, however once logged  in, most requests require the
-access_token parameter. Due to the  persistence and wide-spread use of
+access\_token parameter. Due to the persistence and wide-spread use of
 this parameter,  it will  be stored  as an attribute  on the  main bot
 client class.
 
 The  Gouda class  must also  be  able to  keep track  of user  account
-information provided  by the login  endpoint, such as the  user_id and
-device_id.
+information provided  by the login endpoint, such as the  user\_id and
+device\_id. API specific attributes should also be tracked, such as  a
+user uploaded filter, and "tx id" and "next batch" used in syncing.
 
 The following end points will be implemented for version 1.
 
@@ -183,11 +186,11 @@ The following end points will be implemented for version 1.
 * unstable/logout - logout (manual)
 * unstable/join - join a room
 * unstable/rooms/{..}/leave - leave a room (manual)
-* unstable/profile/{..}/avatar_url - update the avatar
+* unstable/profile/{..}/avatar\_url - update the avatar
 * unstable/profile/{..}/displayname - update the display name
 * All of the valid "Room Participation" API.
 * unstable/presence/{..}/status - update status (last online)
-* unstable/rooms/{..}/read_markers - update the read marker position
+* unstable/rooms/{..}/read\_markers - update the read marker position
 
 Instant messaging should support all events and message types.
 
@@ -195,16 +198,16 @@ A separate API  will be used for  the media end points  since they are
 sufficiently logically  different to the  client. The urls  start with
 the prefix:
 
-/_matrix/media/\<version\>/
+/\_matrix/media/\<version\>/
 
-* /_matrix/media/unstable/upload - uploading content
-* /_matrix/media/unstable/download/{..}/{..}/{..} - download content
+* /\_matrix/media/unstable/upload - uploading content
+* /\_matrix/media/unstable/download/{..}/{..}/{..} - download content
 
 These will not necessarily be supported for version 1. OpenCV may also
 be utilised  by a  module at some  point. Ada has  good enough  FFI to
 achieve this if no libraries are available.
 
-The config  file may take  a new field  "media_hours" which will  be a
+The config  file may take a new field  "media\_hours" which will  be a
 whitelist time range of when it is safe to upload media.
 
 ### Messaging
@@ -232,7 +235,8 @@ stored in a hierachical manner in  a config class, then exposed to the
 correct module at run time.
 
 Modules will all  provide a main subprogram which will  be run for all
-input messages to determine any meaningful output.
+input messages to determine any  meaningful output. Each module should
+be run in a parallel manner.
 
 Images  API -  any viable  API similar  to google  images (or  perhaps
 google itself) which  provides searching for images based  on a search
@@ -279,7 +283,7 @@ could alter the polling rate or something.
 
 Gouda -  main bot class,  keeps track  of connection information  in a
 similar way that a user would, i.e. know about the password, username,
-user_id, access_token. Also  runs the main connection  loop which runs
+user\_id, access\_token. Also runs the main connection loop which runs
 all of the functionality against the server.
 
 Config -  Config handling for main  bot and modules. This  is owned by
@@ -296,7 +300,8 @@ Command line - Any CLI functionality required. Separate thread.
 
 Database - Database connection and routines, provided to modules.
 
-JSON - Utility function for JSON handling.
+Dict - Utility package similar to a  python dictionary which will make
+inline instantiation of JSON data easier.
 
 More may be required.
 
